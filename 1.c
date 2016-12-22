@@ -9,7 +9,7 @@ typedef struct shadowNode {
     char username[32];
     char hash[128];
     struct shadowNode * next;
-} S_NODE;
+} S_NODE;	// Defining node structure
 
 S_NODE * insertNode(S_NODE * headPtr, char * new_user, char * new_hash) {
     S_NODE * prevPtr, * curPtr;
@@ -55,14 +55,6 @@ S_NODE * insertNode(S_NODE * headPtr, char * new_user, char * new_hash) {
     return headPtr;
 }
 
-void print_words(S_NODE * headPtr) {
-    S_NODE * workPtr = headPtr;
-    while (workPtr != NULL) {
-        printf("%s\n",workPtr->username);
-        printf("%s\n",workPtr->hash);
-        workPtr = workPtr->next;
-    }
-}
 void release_words(S_NODE * curPtr) {
     if (curPtr == NULL) {
         return;
@@ -70,7 +62,7 @@ void release_words(S_NODE * curPtr) {
     release_words(curPtr->next);
     free(curPtr);
     
-}
+}	// To clear the linked list after usage
 
 void getTime() {
 	time_t rawtime;
@@ -79,8 +71,8 @@ void getTime() {
   	time ( &rawtime );
   	timeinfo = localtime ( &rawtime );
 
-  	printf("%s \n", asctime(timeinfo));
-}
+  	printf("%s", asctime(timeinfo));
+}	// Function to print time
 
 int inc(char *c){
     if(c[0]==0) return 0;
@@ -90,7 +82,7 @@ int inc(char *c){
     }   
     c[0]++;
     return 1;
-}
+}	// Perumutations function
 
 int duplicateCheck(char * c, int length) {
     int i, j;
@@ -101,15 +93,12 @@ int duplicateCheck(char * c, int length) {
             }
         }
     }
-}
+}	// Checking for duplicate characters in generated guess
 
 int main() {
-	char * secret = "$6$1zBiKbLu$X6oL2XZX8QBSrz87ZNlZQbRIUK1rsfg49nF7EqBU2thM52LRuTjUeH8rchHO42GJQNbOrv4O4aCHBdrF0voTe/"; // Password Hash
 	char * result;
-	char * password;
 	int n = 6; //Max length of Password
 	int i, j; //Loop Integers
-	int x = 1; //Number of hashes
 	int len; //Length of guess
 	char *c = malloc((n+1)*sizeof(char)); //Brute force guess
 	
@@ -137,39 +126,27 @@ int main() {
         do {
         	len = strlen(c);
         	if(duplicateCheck(c, len) != 0) {
-	        	//sprintf(password, "%s", c);
-		   		result = crypt(c, secret);
+		   		result = crypt(c, rootPtr->hash);
 		   		
-				if(strcmp(result, secret) == 0) {	//if result = secret, strcmp returns 0
-					printf("Password Retrieved: %s ", c);
+				if(strcmp(result, rootPtr->hash) == 0) {	//if result = secret, strcmp returns 0
+					printf("User: %s Password: %6s recovered at ", rootPtr->username,c);
 					getTime();
-					x++;
+					rootPtr = rootPtr->next;
+					i=1;
+					j=0;
 				}
 			}
 
-			if(x>1) {
+			if(rootPtr == NULL) {
 				break;
 			}
 
         } while(inc(c));
     }
     
-    free(c);
+    release_words(rootPtr);
 
     printf("Program Ended: ");
     getTime();
-	/*
-	for(i=0; i<999999; i++) {
-		sprintf(password, "%d", i);
-		result = crypt(password, secret);
 
-		if (strcmp(result, secret)) {	//if result = secret, strcmp returns 0
-				printf("%s\n", password);
-		} else {
-				printf("Password Retrieved: %s ", password);
-				getTime();
-				break;
-		}
-	}
-	*/
-}
+}	// Main
