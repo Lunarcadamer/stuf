@@ -7,12 +7,12 @@ typedef struct salesNode {
     char time[32];
     char location[64];
     char item[64];
-    char revenue[32];
+    double revenue;
     char card[32];
     struct salesNode * next;
 } S_NODE;
 
-S_NODE * insertNode(S_NODE * headPtr, char * date, char * time, char * location, char * item, char * revenue, char * card) {
+S_NODE * insertNode(S_NODE * headPtr, char * date, char * time, char * location, char * item, double revenue, char * card) {
     S_NODE * prevPtr, * curPtr;
     S_NODE * newNode ;
     /*
@@ -25,7 +25,7 @@ S_NODE * insertNode(S_NODE * headPtr, char * date, char * time, char * location,
     strcpy(newNode->time, time);
     strcpy(newNode->location, location);
     strcpy(newNode->item, item);
-    strcpy(newNode->revenue, revenue);
+    newNode->revenue = revenue;
     strcpy(newNode->card, card);
 
     newNode->next = NULL;
@@ -72,7 +72,7 @@ void print_words(S_NODE * headPtr) {
         printf("%s ",workPtr->time);
         printf("%-15s ",workPtr->location);
         printf("%-20s ",workPtr->item);
-        printf("%-6s ",workPtr->revenue);
+        printf("%7.2lf ",workPtr->revenue);
         printf("%s \n",workPtr->card);
         workPtr = workPtr->next;
     }
@@ -87,13 +87,14 @@ void release_words(S_NODE * curPtr) {
 }
 
 void main() {
-    char str[257], date[10], time[5], location[32], item[32], revenue[32], card[32];
+    char str[257], date[10], time[5], location[32], item[32], card[32];
+    double revenue;
     FILE * fp;
     fp = fopen("small_purchases.txt", "r");
     S_NODE * rootPtr = NULL;
 
     while(fgets(str, 257, fp) != NULL) {
-        sscanf(str, "%[^\t]\t%[^\t]\t%[^\t]\t%[^\t]\t%[^\t]\t%[^\n]", date, time, location, item, revenue, card);
+        sscanf(str, "%[^\t]\t%[^\t]\t%[^\t]\t%[^\t]\t%lf\t%[^\n]", date, time, location, item, &revenue, card);
 
         rootPtr=insertNode(rootPtr, date, time, location, item, revenue, card);
     }
