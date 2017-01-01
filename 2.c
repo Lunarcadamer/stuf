@@ -264,7 +264,7 @@ P_NODE * orderPnode(P_NODE * headPtr, char * method, double amount) {
     return headPtr;
 }
 
-L_NODE * orderLnode(L_NODE * headPtr, char * location, double amount) {
+L_NODE * descendingLnode(L_NODE * headPtr, char * location, double amount) {
     L_NODE * prevPtr, * curPtr;
     L_NODE * newNode ;
     /*
@@ -309,7 +309,52 @@ L_NODE * orderLnode(L_NODE * headPtr, char * location, double amount) {
     return headPtr;
 }
 
-T_NODE * orderTnode(T_NODE * headPtr, char * time, double amount) {
+L_NODE * ascendingLnode(L_NODE * headPtr, char * location, double amount) {
+    L_NODE * prevPtr, * curPtr;
+    L_NODE * newNode ;
+    /*
+    1.  The headPtr is initially NULL
+    2.  Just append the new Node to the end.
+    */
+    /* always set up a new Node */
+    newNode = (L_NODE *)malloc(sizeof(L_NODE));
+    strcpy(newNode->location, location);
+    newNode->amount = amount;
+    newNode->next = NULL;
+
+    // Case 1
+    if (headPtr == NULL) {
+        return newNode;
+    } 
+
+    // Case 2
+    if (headPtr->amount >= newNode->amount) {
+        newNode->next = headPtr;
+        return newNode;
+    }
+
+    // Case 3
+    prevPtr = headPtr;
+    curPtr = headPtr->next;
+    while (curPtr != NULL) {
+        // test if I should insert the newNode in front of the curPtr node.
+        if (curPtr->amount >= newNode->amount){
+            newNode->next = curPtr;
+            prevPtr->next = newNode;
+            return headPtr;
+        }
+        curPtr = curPtr->next;
+        prevPtr = prevPtr->next;
+    }
+
+    // Case 4: Append the newNode to the end
+    prevPtr->next = newNode;
+
+    /*                        */
+    return headPtr;
+}
+
+T_NODE * descendingTnode(T_NODE * headPtr, char * time, double amount) {
     T_NODE * prevPtr, * curPtr;
     T_NODE * newNode ;
     /*
@@ -339,6 +384,51 @@ T_NODE * orderTnode(T_NODE * headPtr, char * time, double amount) {
     while (curPtr != NULL) {
         // test if I should insert the newNode in front of the curPtr node.
         if (curPtr->amount <= newNode->amount){
+            newNode->next = curPtr;
+            prevPtr->next = newNode;
+            return headPtr;
+        }
+        curPtr = curPtr->next;
+        prevPtr = prevPtr->next;
+    }
+
+    // Case 4: Append the newNode to the end
+    prevPtr->next = newNode;
+
+    /*                        */
+    return headPtr;
+}
+
+T_NODE * ascendingTnode(T_NODE * headPtr, char * time, double amount) {
+    T_NODE * prevPtr, * curPtr;
+    T_NODE * newNode ;
+    /*
+    1.  The headPtr is initially NULL
+    2.  Just append the new Node to the end.
+    */
+    /* always set up a new Node */
+    newNode = (T_NODE *)malloc(sizeof(T_NODE));
+    strcpy(newNode->time, time);
+    newNode->amount = amount;
+    newNode->next = NULL;
+
+    // Case 1
+    if (headPtr == NULL) {
+        return newNode;
+    } 
+
+    // Case 2
+    if (headPtr->amount >= newNode->amount) {
+        newNode->next = headPtr;
+        return newNode;
+    }
+
+    // Case 3
+    prevPtr = headPtr;
+    curPtr = headPtr->next;
+    while (curPtr != NULL) {
+        // test if I should insert the newNode in front of the curPtr node.
+        if (curPtr->amount >= newNode->amount){
             newNode->next = curPtr;
             prevPtr->next = newNode;
             return headPtr;
@@ -416,7 +506,8 @@ void payment_summary(S_NODE * headPtr) {
 void location_summary(S_NODE * headPtr) {
     S_NODE * workPtr = headPtr;
     L_NODE * location = NULL;
-    L_NODE * location2 = NULL;
+    L_NODE * desclocation = NULL;
+    L_NODE * asclocation = NULL;
 
     while (workPtr != NULL) {
         location = insertLnode(location, workPtr->location, workPtr->revenue);
@@ -425,17 +516,27 @@ void location_summary(S_NODE * headPtr) {
     }
 
     while (location != NULL) {
-        location2 = orderLnode(location2, location->location, location->amount);
+        desclocation = descendingLnode(desclocation, location->location, location->amount);
+        asclocation = ascendingLnode(asclocation, location->location, location->amount);
+
 
         location = location->next;
     }
 
-    printf("\t==Location Summary==\n");
+    printf("\t==Top Sales Stores Summary==\n");
 
-    while (location2 != NULL) {
-        printf("\t%-20s",location2->location);
-        printf("$%7.2lf \n",location2->amount);
-        location2 = location2->next;
+    for (int i = 0; i < 3; i++) {
+        printf("\t%-20s",desclocation->location);
+        printf("$%7.2lf \n",desclocation->amount);
+        desclocation = desclocation->next;
+    }
+
+    printf("\t==Weakest Sales Stores Summary==\n");
+
+    for (int i = 0; i < 3; i++) {
+        printf("\t%-20s",asclocation->location);
+        printf("$%7.2lf \n",asclocation->amount);
+        asclocation = asclocation->next;
     }
 
     //release_pNode(payment);
@@ -444,7 +545,8 @@ void location_summary(S_NODE * headPtr) {
 void time_summary(S_NODE * headPtr) {
     S_NODE * workPtr = headPtr;
     T_NODE * timePtr = NULL;
-    T_NODE * timePtr2 = NULL;
+    T_NODE * desctimePtr = NULL;
+    T_NODE * asctimePtr = NULL;
 
     while (workPtr != NULL) {
         timePtr = insertTnode(timePtr, workPtr->time, workPtr->revenue);
@@ -453,17 +555,26 @@ void time_summary(S_NODE * headPtr) {
     }
 
     while (timePtr != NULL) {
-        timePtr2 = orderTnode(timePtr2, timePtr->time, timePtr->amount);
+        desctimePtr = descendingTnode(desctimePtr, timePtr->time, timePtr->amount);
+        asctimePtr = ascendingTnode(asctimePtr, timePtr->time, timePtr->amount);
 
         timePtr = timePtr->next;
     }
 
-    printf("\t==Time Summary==\n");
+    printf("\t==Peak Hours Summary==\n");
 
-    while (timePtr2 != NULL) {
-        printf("\t%-20s",timePtr2->time);
-        printf("$%7.2lf \n",timePtr2->amount);
-        timePtr2 = timePtr2->next;
+    for (int i = 0; i < 3; i++) {
+        printf("\t%-20s",desctimePtr->time);
+        printf("$%7.2lf \n",desctimePtr->amount);
+        desctimePtr = desctimePtr->next;
+    }
+
+    printf("\t==Quiet Hours Summary==\n");
+
+    for (int i = 0; i < 3; i++) {
+        printf("\t%-20s",asctimePtr->time);
+        printf("$%7.2lf \n",asctimePtr->amount);
+        asctimePtr = asctimePtr->next;
     }
 
     //release_pNode(payment);
@@ -483,7 +594,7 @@ void main() {
     }
 
     fclose(fp);
-    print_words(rootPtr);
+    //print_words(rootPtr);
     payment_summary(rootPtr);
     location_summary(rootPtr);
     time_summary(rootPtr);
