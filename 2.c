@@ -597,7 +597,7 @@ void main() {
     char str[257], date[10], time[5], location[32], item[32], card[32];
     double revenue;
     FILE * fp;
-    fp = fopen("small_purchases.txt", "r");
+    fp = fopen("purchases.txt", "r");
     S_NODE * rootPtr = NULL;
 
     while(fgets(str, 257, fp) != NULL) {
