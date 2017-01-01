@@ -24,6 +24,12 @@ typedef struct locationNode {
     struct locationNode * next;
 } L_NODE;
 
+typedef struct timeNode {
+    char time[32];
+    double amount;
+    struct timeNode * next;
+} T_NODE;
+
 S_NODE * insertNode(S_NODE * headPtr, char * date, char * time, char * location, char * item, double revenue, char * card) {
     S_NODE * prevPtr, * curPtr;
     S_NODE * newNode ;
@@ -163,6 +169,57 @@ L_NODE * insertLnode(L_NODE * headPtr, char * location, double amount) {
     return headPtr;
 }
 
+T_NODE * insertTnode(T_NODE * headPtr, char * time, double amount) {
+    T_NODE * prevPtr, * curPtr;
+    T_NODE * newNode ;
+    /*
+    1.  The headPtr is initially NULL
+    2.  Just append the new Node to the end.
+    */
+    /* always set up a new Node */
+    newNode = (T_NODE *)malloc(sizeof(T_NODE));
+    if(time[3]<'3'){
+        time[3] = '0';
+        time[4] = '0';        
+    }
+    else {
+        time[3] = '3';
+        time[4] = '0';
+    }
+    strcpy(newNode->time, time);
+    newNode->amount = amount;
+    newNode->next = NULL;
+
+    if (headPtr == NULL) {
+        return newNode;
+    }
+
+    if (strcmp(headPtr->time, newNode->time) == 0 ) {
+        headPtr->amount += newNode->amount;
+        return headPtr;
+    }
+
+    prevPtr = headPtr;
+    curPtr = headPtr->next;
+    while (curPtr != NULL) {
+        // test if I should insert the newNode in front of the curPtr node.
+        if (strcmp(curPtr->time, newNode->time) == 0){           
+            curPtr->amount += newNode->amount;
+            return headPtr;
+        }
+        else {
+            curPtr = curPtr->next;
+            prevPtr = prevPtr->next;
+        }
+    }
+
+    // Case 4: Append the newNode to the end
+    prevPtr->next = newNode;
+
+    /*                        */
+    return headPtr;
+}
+
 void print_words(S_NODE * headPtr) {
     S_NODE * workPtr = headPtr;
     while (workPtr != NULL) {
@@ -236,6 +293,27 @@ void location_summary(S_NODE * headPtr) {
     //release_pNode(payment);
 }
 
+void time_summary(S_NODE * headPtr) {
+    S_NODE * workPtr = headPtr;
+    T_NODE * timePtr = NULL;
+
+    while (workPtr != NULL) {
+        timePtr = insertTnode(timePtr, workPtr->time, workPtr->revenue);
+
+        workPtr = workPtr->next;
+    }
+
+    printf("\t==Time Summary==\n");
+
+    while (timePtr != NULL) {
+        printf("\t%-20s",timePtr->time);
+        printf("$%7.2lf \n",timePtr->amount);
+        timePtr = timePtr->next;
+    }
+
+    //release_pNode(payment);
+}
+
 void main() {
     char str[257], date[10], time[5], location[32], item[32], card[32];
     double revenue;
@@ -253,5 +331,6 @@ void main() {
     print_words(rootPtr);
     payment_summary(rootPtr);
     location_summary(rootPtr);
+    time_summary(rootPtr);
     release_words(rootPtr);
 }
