@@ -444,24 +444,11 @@ T_NODE * ascendingTnode(T_NODE * headPtr, char * time, double amount) {
     return headPtr;
 }
 
-void print_words(S_NODE * headPtr) {
-    S_NODE * workPtr = headPtr;
-    while (workPtr != NULL) {
-        printf("%s ",workPtr->date);
-        printf("%s ",workPtr->time);
-        printf("%-15s ",workPtr->location);
-        printf("%-20s ",workPtr->item);
-        printf("%7.2lf ",workPtr->revenue);
-        printf("%s \n",workPtr->card);
-        workPtr = workPtr->next;
-    }
-}
-
-void release_words(S_NODE * curPtr) {
+void release_sales(S_NODE * curPtr) {
     if (curPtr == NULL) {
         return;
     }
-    release_words(curPtr->next);
+    release_sales(curPtr->next);
     free(curPtr);
     
 }
@@ -471,6 +458,24 @@ void release_pNode(P_NODE * curPtr) {
         return;
     }
     release_pNode(curPtr->next);
+    free(curPtr);
+    
+}
+
+void release_lNode(L_NODE * curPtr) {
+    if (curPtr == NULL) {
+        return;
+    }
+    release_lNode(curPtr->next);
+    free(curPtr);
+    
+}
+
+void release_tNode(T_NODE * curPtr) {
+    if (curPtr == NULL) {
+        return;
+    }
+    release_tNode(curPtr->next);
     free(curPtr);
     
 }
@@ -500,7 +505,9 @@ void payment_summary(S_NODE * headPtr) {
         payment2 = payment2->next;
     }
 
-    //release_pNode(payment);
+    release_sales(workPtr);
+    release_pNode(payment);
+    release_pNode(payment2);
 }
 
 void location_summary(S_NODE * headPtr) {
@@ -539,7 +546,10 @@ void location_summary(S_NODE * headPtr) {
         asclocation = asclocation->next;
     }
 
-    //release_pNode(payment);
+    release_sales(workPtr);
+    release_lNode(location);
+    release_lNode(desclocation);
+    release_lNode(asclocation);
 }
 
 void time_summary(S_NODE * headPtr) {
@@ -577,7 +587,10 @@ void time_summary(S_NODE * headPtr) {
         asctimePtr = asctimePtr->next;
     }
 
-    //release_pNode(payment);
+    release_sales(workPtr);
+    release_tNode(timePtr);
+    release_tNode(desctimePtr);
+    release_tNode(asctimePtr);
 }
 
 void main() {
@@ -594,9 +607,9 @@ void main() {
     }
 
     fclose(fp);
-    //print_words(rootPtr);
+
     payment_summary(rootPtr);
     location_summary(rootPtr);
     time_summary(rootPtr);
-    release_words(rootPtr);
+    release_sales(rootPtr);
 }
