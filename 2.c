@@ -18,6 +18,12 @@ typedef struct paymentNode {
     struct paymentNode * next;
 } P_NODE;
 
+typedef struct locationNode {
+    char location[64];
+    double amount;
+    struct locationNode * next;
+} L_NODE;
+
 S_NODE * insertNode(S_NODE * headPtr, char * date, char * time, char * location, char * item, double revenue, char * card) {
     S_NODE * prevPtr, * curPtr;
     S_NODE * newNode ;
@@ -41,8 +47,8 @@ S_NODE * insertNode(S_NODE * headPtr, char * date, char * time, char * location,
         return newNode;
     }
     // Case 2
-    if (strcmp(headPtr->date, newNode->date) >= 0 ) {
-        if(strcmp(headPtr->time, newNode->time) >=0 ){
+    if (strcmp(headPtr->date, newNode->date) == 0) {
+        if(strcmp(headPtr->time, newNode->time) == 0){
             newNode->next = headPtr;
             return newNode;
         }
@@ -53,8 +59,8 @@ S_NODE * insertNode(S_NODE * headPtr, char * date, char * time, char * location,
     curPtr = headPtr->next;
     while (curPtr != NULL) {
         // test if I should insert the newNode in front of the curPtr node.
-        if (strcmp(curPtr->date, newNode->date) >= 0){
-            if(strcmp(curPtr->time, newNode->time) >=0) {
+        if (strcmp(curPtr->date, newNode->date) == 0){
+            if(strcmp(curPtr->time, newNode->time) == 0) {
                 newNode->next = curPtr;
                 prevPtr->next = newNode;
                 return headPtr;
@@ -84,28 +90,70 @@ P_NODE * insertPnode(P_NODE * headPtr, char * method, double amount) {
     newNode->amount = amount;
     newNode->next = NULL;
 
-    // Case 1
     if (headPtr == NULL) {
         return newNode;
     }
-    // Case 2
-    if (headPtr->amount <= newNode->amount) {
-        newNode->next = headPtr;
-        return newNode;
+
+    if (strcmp(headPtr->method, newNode->method) == 0 ) {
+        headPtr->amount += newNode->amount;
+        return headPtr;
     }
 
-    // Case 3
     prevPtr = headPtr;
     curPtr = headPtr->next;
     while (curPtr != NULL) {
         // test if I should insert the newNode in front of the curPtr node.
-        if (curPtr->amount <= newNode->amount){
-            newNode->next = curPtr;
-            prevPtr->next = newNode;
+        if (strcmp(curPtr->method, newNode->method) == 0){           
+            curPtr->amount += newNode->amount;
             return headPtr;
         }
-        curPtr = curPtr->next;
-        prevPtr = prevPtr->next;
+        else {
+            curPtr = curPtr->next;
+            prevPtr = prevPtr->next;
+        }
+    }
+
+    // Case 4: Append the newNode to the end
+    prevPtr->next = newNode;
+
+    /*                        */
+    return headPtr;
+}
+
+L_NODE * insertLnode(L_NODE * headPtr, char * location, double amount) {
+    L_NODE * prevPtr, * curPtr;
+    L_NODE * newNode ;
+    /*
+    1.  The headPtr is initially NULL
+    2.  Just append the new Node to the end.
+    */
+    /* always set up a new Node */
+    newNode = (L_NODE *)malloc(sizeof(L_NODE));
+    strcpy(newNode->location, location);
+    newNode->amount = amount;
+    newNode->next = NULL;
+
+    if (headPtr == NULL) {
+        return newNode;
+    }
+
+    if (strcmp(headPtr->location, newNode->location) == 0 ) {
+        headPtr->amount += newNode->amount;
+        return headPtr;
+    }
+
+    prevPtr = headPtr;
+    curPtr = headPtr->next;
+    while (curPtr != NULL) {
+        // test if I should insert the newNode in front of the curPtr node.
+        if (strcmp(curPtr->location, newNode->location) == 0){           
+            curPtr->amount += newNode->amount;
+            return headPtr;
+        }
+        else {
+            curPtr = curPtr->next;
+            prevPtr = prevPtr->next;
+        }
     }
 
     // Case 4: Append the newNode to the end
@@ -137,41 +185,55 @@ void release_words(S_NODE * curPtr) {
     
 }
 
-void payment_methods(S_NODE * headPtr) {
-    double amount[5];
-    char * name[5] = {"Amex", "Cash", "Discover", "MasterCard", "Visa"};
+void release_pNode(P_NODE * curPtr) {
+    if (curPtr == NULL) {
+        return;
+    }
+    release_pNode(curPtr->next);
+    free(curPtr);
+    
+}
+
+void payment_summary(S_NODE * headPtr) {
     S_NODE * workPtr = headPtr;
     P_NODE * payment = NULL;
-    while (workPtr != NULL) {
-        if (strcmp(workPtr->card, "Amex") == 0) {
-            amount[0]+=workPtr->revenue;
-        }
-        if (strcmp(workPtr->card, "Cash") == 0) {
-            amount[1]+=workPtr->revenue;
-        }
-        if (strcmp(workPtr->card, "Discover") == 0) {
-            amount[2]+=workPtr->revenue;
-        }
-        if (strcmp(workPtr->card, "MasterCard") == 0) {
-            amount[3]+=workPtr->revenue;
-        }
-        if (strcmp(workPtr->card, "Visa") == 0) {
-            amount[4]+=workPtr->revenue;
-        }
-        workPtr= workPtr->next;
-    }
 
-    for(int i = 0; i <= 4; i++) {
-        payment = insertPnode(payment, name[i], amount[i]);
+    while (workPtr != NULL) {
+        payment = insertPnode(payment, workPtr->card, workPtr->revenue);
+
+        workPtr = workPtr->next;
     }
 
     printf("\t==Payment Methods Summary==\n");
 
     while (payment != NULL) {
         printf("\t%-20s",payment->method);
-        printf("%7.2lf \n",payment->amount);
+        printf("$%7.2lf \n",payment->amount);
         payment = payment->next;
     }
+
+    release_pNode(payment);
+}
+
+void location_summary(S_NODE * headPtr) {
+    S_NODE * workPtr = headPtr;
+    L_NODE * location = NULL;
+
+    while (workPtr != NULL) {
+        location = insertLnode(location, workPtr->location, workPtr->revenue);
+
+        workPtr = workPtr->next;
+    }
+
+    printf("\t==Location Summary==\n");
+
+    while (location != NULL) {
+        printf("\t%-20s",location->location);
+        printf("$%7.2lf \n",location->amount);
+        location = location->next;
+    }
+
+    //release_pNode(payment);
 }
 
 void main() {
@@ -189,6 +251,7 @@ void main() {
 
     fclose(fp);
     print_words(rootPtr);
-    payment_methods(rootPtr);
+    payment_summary(rootPtr);
+    location_summary(rootPtr);
     release_words(rootPtr);
 }
