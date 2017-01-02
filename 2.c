@@ -2,14 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct salesNode {
-    char time[6];
-    char location[32];
-    double revenue;
-    char card[16];
-    struct salesNode * next;
-} S_NODE;
-
 typedef struct paymentNode {
     char method[16];
     double amount;
@@ -27,52 +19,6 @@ typedef struct timeNode {
     double amount;
     struct timeNode * next;
 } T_NODE;
-
-S_NODE * insertNode(S_NODE * headPtr, char * time, char * location, double revenue, char * card) {
-    S_NODE * prevPtr, * curPtr;
-    S_NODE * newNode ;
-    /*
-    1.  The headPtr is initially NULL
-    2.  Just append the new Node to the end.
-    */
-    /* always set up a new Node */
-    newNode = (S_NODE *)malloc(sizeof(S_NODE));
-    strcpy(newNode->time, time);
-    strcpy(newNode->location, location);
-    newNode->revenue = revenue;
-    strcpy(newNode->card, card);
-
-    newNode->next = NULL;
-
-    // Case 1
-    if (headPtr == NULL) {
-        return newNode;
-    }
-    // Case 2
-    if(strcmp(headPtr->time, newNode->time) == 0){
-        newNode->next = headPtr;
-        return newNode;
-    }
-
-    // Case 3
-    prevPtr = headPtr;
-    curPtr = headPtr->next;
-    while (curPtr != NULL) {
-        if(strcmp(curPtr->time, newNode->time) == 0) {
-            newNode->next = curPtr;
-            prevPtr->next = newNode;
-            return headPtr;
-        }
-        curPtr = curPtr->next;
-        prevPtr = prevPtr->next;
-    }
-
-    // Case 4: Append the newNode to the end
-    prevPtr->next = newNode;
-
-    /*                        */
-    return headPtr;
-}
 
 P_NODE * insertPnode(P_NODE * headPtr, char * method, double amount) {
     P_NODE * prevPtr, * curPtr;
@@ -434,15 +380,6 @@ T_NODE * ascendingTnode(T_NODE * headPtr, char * time, double amount) {
 
     /*                        */
     return headPtr;
-}
-
-void release_sales(S_NODE * curPtr) {
-    if (curPtr == NULL) {
-        return;
-    }
-    release_sales(curPtr->next);
-    free(curPtr);
-    
 }
 
 void release_pNode(P_NODE * curPtr) {
