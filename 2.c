@@ -3,10 +3,8 @@
 #include <string.h>
 
 typedef struct salesNode {
-    char date[11];
     char time[6];
     char location[32];
-    char item[16];
     double revenue;
     char card[16];
     struct salesNode * next;
@@ -30,7 +28,7 @@ typedef struct timeNode {
     struct timeNode * next;
 } T_NODE;
 
-S_NODE * insertNode(S_NODE * headPtr, char * date, char * time, char * location, char * item, double revenue, char * card) {
+S_NODE * insertNode(S_NODE * headPtr, char * time, char * location, double revenue, char * card) {
     S_NODE * prevPtr, * curPtr;
     S_NODE * newNode ;
     /*
@@ -39,10 +37,8 @@ S_NODE * insertNode(S_NODE * headPtr, char * date, char * time, char * location,
     */
     /* always set up a new Node */
     newNode = (S_NODE *)malloc(sizeof(S_NODE));
-    strcpy(newNode->date, date);
     strcpy(newNode->time, time);
     strcpy(newNode->location, location);
-    strcpy(newNode->item, item);
     newNode->revenue = revenue;
     strcpy(newNode->card, card);
 
@@ -53,23 +49,19 @@ S_NODE * insertNode(S_NODE * headPtr, char * date, char * time, char * location,
         return newNode;
     }
     // Case 2
-    if (strcmp(headPtr->date, newNode->date) == 0) {
-        if(strcmp(headPtr->time, newNode->time) == 0){
-            newNode->next = headPtr;
-            return newNode;
-        }
+    if(strcmp(headPtr->time, newNode->time) == 0){
+        newNode->next = headPtr;
+        return newNode;
     }
 
     // Case 3
     prevPtr = headPtr;
     curPtr = headPtr->next;
     while (curPtr != NULL) {
-        if (strcmp(curPtr->date, newNode->date) == 0){
-            if(strcmp(curPtr->time, newNode->time) == 0) {
-                newNode->next = curPtr;
-                prevPtr->next = newNode;
-                return headPtr;
-            }
+        if(strcmp(curPtr->time, newNode->time) == 0) {
+            newNode->next = curPtr;
+            prevPtr->next = newNode;
+            return headPtr;
         }
         curPtr = curPtr->next;
         prevPtr = prevPtr->next;
@@ -480,54 +472,39 @@ void release_tNode(T_NODE * curPtr) {
     
 }
 
-void payment_summary(S_NODE * headPtr) {
-    S_NODE * workPtr = headPtr;
+void payment_summary(P_NODE * headPtr) {
+    P_NODE * workPtr = headPtr;
     P_NODE * payment = NULL;
-    P_NODE * payment2 = NULL;
 
     while (workPtr != NULL) {
-        payment = insertPnode(payment, workPtr->card, workPtr->revenue);
+        payment = orderPnode(payment, workPtr->method, workPtr->amount);
 
         workPtr = workPtr->next;
-    }
-
-    while (payment != NULL) {
-        payment2 = orderPnode(payment2, payment->method, payment->amount);
-
-        payment = payment->next;
     }
 
     printf("\t==Payment Methods Summary==\n");
 
-    while (payment2 != NULL) {
-        printf("\t%-20s",payment2->method);
-        printf("$%7.2lf \n",payment2->amount);
-        payment2 = payment2->next;
+    while (payment != NULL) {
+        printf("\t%-20s",payment->method);
+        printf("$%7.2lf \n",payment->amount);
+        payment = payment->next;
     }
 
-    release_sales(workPtr);
+    release_pNode(workPtr);
     release_pNode(payment);
-    release_pNode(payment2);
 }
 
-void location_summary(S_NODE * headPtr) {
-    S_NODE * workPtr = headPtr;
-    L_NODE * location = NULL;
+void location_summary(L_NODE * headPtr) {
+    L_NODE * workPtr = headPtr;
     L_NODE * desclocation = NULL;
     L_NODE * asclocation = NULL;
 
-    while (workPtr != NULL) {
-        location = insertLnode(location, workPtr->location, workPtr->revenue);
+    while (workPtr!= NULL) {
+        desclocation = descendingLnode(desclocation, workPtr->location, workPtr->amount);
+        asclocation = ascendingLnode(asclocation, workPtr->location, workPtr->amount);
+
 
         workPtr = workPtr->next;
-    }
-
-    while (location != NULL) {
-        desclocation = descendingLnode(desclocation, location->location, location->amount);
-        asclocation = ascendingLnode(asclocation, location->location, location->amount);
-
-
-        location = location->next;
     }
 
     printf("\t==Top Sales Stores Summary==\n");
@@ -546,29 +523,21 @@ void location_summary(S_NODE * headPtr) {
         asclocation = asclocation->next;
     }
 
-    release_sales(workPtr);
-    release_lNode(location);
+    release_lNode(workPtr);
     release_lNode(desclocation);
     release_lNode(asclocation);
 }
 
-void time_summary(S_NODE * headPtr) {
-    S_NODE * workPtr = headPtr;
-    T_NODE * timePtr = NULL;
+void time_summary(T_NODE * headPtr) {
+    T_NODE * workPtr = headPtr;
     T_NODE * desctimePtr = NULL;
     T_NODE * asctimePtr = NULL;
 
     while (workPtr != NULL) {
-        timePtr = insertTnode(timePtr, workPtr->time, workPtr->revenue);
+        desctimePtr = descendingTnode(desctimePtr, workPtr->time, workPtr->amount);
+        asctimePtr = ascendingTnode(asctimePtr, workPtr->time, workPtr->amount);
 
         workPtr = workPtr->next;
-    }
-
-    while (timePtr != NULL) {
-        desctimePtr = descendingTnode(desctimePtr, timePtr->time, timePtr->amount);
-        asctimePtr = ascendingTnode(asctimePtr, timePtr->time, timePtr->amount);
-
-        timePtr = timePtr->next;
     }
 
     printf("\t==Peak Hours Summary==\n");
@@ -587,8 +556,7 @@ void time_summary(S_NODE * headPtr) {
         asctimePtr = asctimePtr->next;
     }
 
-    release_sales(workPtr);
-    release_tNode(timePtr);
+    release_tNode(workPtr);
     release_tNode(desctimePtr);
     release_tNode(asctimePtr);
 }
@@ -597,8 +565,10 @@ void main() {
     char str[257], date[10], time[5], location[32], item[32], card[32];
     double revenue;
     FILE * fp;
-    fp = fopen("small_purchases.txt", "r");
-    S_NODE * rootPtr = NULL;
+    fp = fopen("purchases.txt", "r");
+    P_NODE * paymentPtr = NULL;
+    L_NODE * locationPtr = NULL;
+    T_NODE * timePtr = NULL;
 
     if(fp == NULL) {
         printf("Error opening file");
@@ -608,13 +578,18 @@ void main() {
     while(fgets(str, 257, fp) != NULL) {
         sscanf(str, "%[^\t]\t%[^\t]\t%[^\t]\t%[^\t]\t%lf\t%s", date, time, location, item, &revenue, card);
 
-        rootPtr=insertNode(rootPtr, date, time, location, item, revenue, card);
+        paymentPtr = insertPnode(paymentPtr, card, revenue);
+        locationPtr = insertLnode(locationPtr, location, revenue);
+        timePtr = insertTnode(timePtr, time, revenue);
     }
 
     fclose(fp);
 
-    payment_summary(rootPtr);
-    location_summary(rootPtr);
-    time_summary(rootPtr);
-    release_sales(rootPtr);
+    payment_summary(paymentPtr);
+    location_summary(locationPtr);
+    time_summary(timePtr);
+
+    release_pNode(paymentPtr);
+    release_lNode(locationPtr);
+    release_tNode(timePtr);
 }
