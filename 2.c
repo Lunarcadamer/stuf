@@ -3,29 +3,29 @@
 #include <string.h>
 
 typedef struct salesNode {
-    char date[32];
-    char time[32];
-    char location[64];
-    char item[64];
+    char date[11];
+    char time[6];
+    char location[32];
+    char item[16];
     double revenue;
-    char card[32];
+    char card[16];
     struct salesNode * next;
 } S_NODE;
 
 typedef struct paymentNode {
-    char method[32];
+    char method[16];
     double amount;
     struct paymentNode * next;
 } P_NODE;
 
 typedef struct locationNode {
-    char location[64];
+    char location[32];
     double amount;
     struct locationNode * next;
 } L_NODE;
 
 typedef struct timeNode {
-    char time[32];
+    char time[5];
     double amount;
     struct timeNode * next;
 } T_NODE;
@@ -597,8 +597,13 @@ void main() {
     char str[257], date[10], time[5], location[32], item[32], card[32];
     double revenue;
     FILE * fp;
-    fp = fopen("purchases.txt", "r");
+    fp = fopen("small_purchases.txt", "r");
     S_NODE * rootPtr = NULL;
+
+    if(fp == NULL) {
+        printf("Error opening file");
+    }
+
 
     while(fgets(str, 257, fp) != NULL) {
         sscanf(str, "%[^\t]\t%[^\t]\t%[^\t]\t%[^\t]\t%lf\t%s", date, time, location, item, &revenue, card);
