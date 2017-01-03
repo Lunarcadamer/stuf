@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
 
 typedef struct paymentNode {
     char method[16];
@@ -412,6 +413,8 @@ void release_tNode(T_NODE * curPtr) {
 void payment_summary(P_NODE * headPtr) {
     P_NODE * workPtr = headPtr;
     P_NODE * payment = NULL;
+    setlocale(LC_NUMERIC, "");
+    char revenue[32];
 
     while (workPtr != NULL) {
         payment = orderPnode(payment, workPtr->method, workPtr->amount);
@@ -422,8 +425,9 @@ void payment_summary(P_NODE * headPtr) {
     printf("\t==Payment Methods Summary==\n");
 
     while (payment != NULL) {
-        printf("\t%-20s",payment->method);
-        printf("$%7.2lf \n",payment->amount);
+        revenue[0] = '$';
+        sprintf(&revenue[1], "%'.2lf", payment->amount);
+        printf("%15s : %20s \n",payment->method, revenue);
         payment = payment->next;
     }
 
@@ -435,6 +439,8 @@ void location_summary(L_NODE * headPtr) {
     L_NODE * workPtr = headPtr;
     L_NODE * desclocation = NULL;
     L_NODE * asclocation = NULL;
+    setlocale(LC_NUMERIC, "");
+    char revenue[32];
 
     while (workPtr!= NULL) {
         desclocation = descendingLnode(desclocation, workPtr->location, workPtr->amount);
@@ -447,16 +453,18 @@ void location_summary(L_NODE * headPtr) {
     printf("\t==Top Sales Stores Summary==\n");
 
     for (int i = 0; i < 3; i++) {
-        printf("\t%-20s",desclocation->location);
-        printf("$%7.2lf \n",desclocation->amount);
+        revenue[0] = '$';
+        sprintf(&revenue[1], "%'.2lf", desclocation->amount);
+        printf("%15s : %20s \n", desclocation->location, revenue);
         desclocation = desclocation->next;
     }
 
     printf("\t==Weakest Sales Stores Summary==\n");
 
     for (int i = 0; i < 3; i++) {
-        printf("\t%-20s",asclocation->location);
-        printf("$%7.2lf \n",asclocation->amount);
+        revenue[0] = '$';
+        sprintf(&revenue[1], "%'.2lf", asclocation->amount);
+        printf("%15s : %20s \n",asclocation->location, revenue);
         asclocation = asclocation->next;
     }
 
@@ -469,6 +477,8 @@ void time_summary(T_NODE * headPtr) {
     T_NODE * workPtr = headPtr;
     T_NODE * desctimePtr = NULL;
     T_NODE * asctimePtr = NULL;
+    setlocale(LC_NUMERIC, "");
+    char revenue[32];
 
     while (workPtr != NULL) {
         desctimePtr = descendingTnode(desctimePtr, workPtr->time, workPtr->amount);
@@ -480,16 +490,18 @@ void time_summary(T_NODE * headPtr) {
     printf("\t==Peak Hours Summary==\n");
 
     for (int i = 0; i < 3; i++) {
-        printf("\t%-20s",desctimePtr->time);
-        printf("$%7.2lf \n",desctimePtr->amount);
+        revenue[0] = '$';
+        sprintf(&revenue[1], "%'.2lf", desctimePtr->amount);
+        printf("%15s : %20s \n",desctimePtr->time, revenue);
         desctimePtr = desctimePtr->next;
     }
 
     printf("\t==Quiet Hours Summary==\n");
 
     for (int i = 0; i < 3; i++) {
-        printf("\t%-20s",asctimePtr->time);
-        printf("$%7.2lf \n",asctimePtr->amount);
+        revenue[0] = '$';
+        sprintf(&revenue[1], "%'.2lf", asctimePtr->amount);
+        printf("%15s : %20s \n",asctimePtr->time, revenue);
         asctimePtr = asctimePtr->next;
     }
 
