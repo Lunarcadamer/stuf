@@ -2,6 +2,8 @@
 By Aloysius Chia (1547098)
 
 DISM/FT/2A/21
+
+Task 2: Sales Log Report
 */
 
 #include <stdio.h>
