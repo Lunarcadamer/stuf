@@ -1,3 +1,13 @@
+/*
+By Aloysius Chia (1547098)
+
+DISM/FT/2A/21
+
+Task 1: Password Recovery
+
+Permutations Algorithm adapted from Jules Olléon's answer at http://stackoverflow.com/questions/4764608/generate-all-strings-under-length-n-in-c
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -14,6 +24,7 @@ typedef struct shadowNode {
 } S_NODE;	// Defining node structure
 
 S_NODE * insertNode(S_NODE * headPtr, char * new_user, char * new_hash) {
+	// Function to generate linked list for the program. Takes a linked list, a username and a hash.
     S_NODE * prevPtr, * curPtr;
     S_NODE * newNode ;
     /*
@@ -55,7 +66,7 @@ S_NODE * insertNode(S_NODE * headPtr, char * new_user, char * new_hash) {
 
     /*                        */
     return headPtr;
-}
+}	// Function to generate linked list for the program. Takes a linked list, a username and a hash.
 
 void release_words(S_NODE * curPtr) {
     if (curPtr == NULL) {
@@ -67,6 +78,7 @@ void release_words(S_NODE * curPtr) {
 }	// To clear the linked list after usage
 
 char * getTime() {
+	// Function to get current time, returns a formated time string
 	time_t timer;
     struct tm* tm_info;
     static char timeStr[32];
@@ -78,9 +90,10 @@ char * getTime() {
 
     return timeStr;
 
-}	// Function to print time
+}	// Function to get current time, returns a formated time string
 
 int inc(char *c){
+	// Perumutation generating function
     if(c[0]==0) return 0;
     if(c[0]=='9'){
         c[0]='0';
@@ -88,33 +101,35 @@ int inc(char *c){
     }   
     c[0]++;
     return 1;
-}	// Perumutations function
+}	// Perumutation generating function
 
 int duplicateCheck(char * c, int length) {
+	// Checking for duplicate characters in generated permutation, takes in a string and its length. Returns a 1 if a duplicate is detected.
     int i, j;
     for(i=0; i<=length; i++){
         for(j=i+1; j<=length; j++){
             if(c[i] == c[j]) {
-                return 0;
+                return 1;
             }
         }
     }
-}	// Checking for duplicate characters in generated guess
+}	// Checking for duplicate characters in generated permutation, takes in a string and its length. Returns a 1 if a duplicate is detected.
 
 int main() {
 	char * result;
-	int n = 6; //Max length of Password
-	int i, j; //Loop Integers
-	int len; //Length of guess
-	char *c = malloc((n+1)*sizeof(char)); //Brute force guess
+	int i, j; // Loop Integers
+	int len; // Length of generated permutation
+	char *c = malloc((n+1)*sizeof(char)); // Generated permutation
 
 	printf("Program Started: %s \n", getTime());
 
+	// Opening the file
 	FILE * fp;
     fp = fopen("shadow.txt", "r");
     char str[150], username[10], hash[128];
     S_NODE * rootPtr = NULL;
 
+    // Creating linked list with username and hashed password
     while(fgets(str, 150, fp) != NULL) {
         strcpy(username, strtok(str, ":"));
         strcpy(hash, strtok(NULL, ":"));
@@ -126,26 +141,30 @@ int main() {
 
     S_NODE * headPtr = rootPtr; // Backup of original pointer
 	
+
+	// Password cracking begins
 	for(i=1;i<=n;i++){
     	for(j=0;j<i;j++) c[j]='0';
     	c[i]=0;
         
         do {
         	len = strlen(c);
-        	if(duplicateCheck(c, len) != 0) {
+        	if(duplicateCheck(c, len) != 1) { // Checking for duplicate characters, if no duplicates detected, use crypt() function
 		   		result = crypt(c, rootPtr->hash);
 		   		
-				if(strcmp(result, rootPtr->hash) == 0) {	//if result = secret, strcmp returns 0
-					//printf("User: %s Password: %6s recovered at [%s]\n", rootPtr->username, c, getTime());
+				if(strcmp(result, rootPtr->hash) == 0) {	//if result == secret, strcmp returns 0
 					strcpy(rootPtr->recoveredPassword, c);
 					strcpy(rootPtr->timeData, getTime());
-					rootPtr = rootPtr->next;
+					rootPtr = rootPtr->next;	// Move on to the next entry
+
+					// Reseting perumutation loops
 					i=1;
 					j=0;
 				}
 			}
 
 			if(rootPtr == NULL) {
+				// Exits the loop once no more entries remain
 				break;
 			}
 
@@ -154,11 +173,13 @@ int main() {
 
     printf("Program Ended: %s \n\n", getTime());
 
+    // Printing results
     while (headPtr != NULL) {
     	printf("User: %s Password: %6s recovered at [%s]\n", headPtr->username, headPtr->recoveredPassword, headPtr->timeData);
     	headPtr = headPtr->next;
     }
 
+    // Freeing memory
     release_words(headPtr);
     release_words(rootPtr);
 
