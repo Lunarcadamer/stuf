@@ -68,11 +68,11 @@ S_NODE * insertNode(S_NODE * headPtr, char * new_user, char * new_hash) {
     return headPtr;
 }	// Function to generate linked list for the program. Takes a linked list, a username and a hash.
 
-void release_words(S_NODE * curPtr) {
+void release_nodes(S_NODE * curPtr) {
     if (curPtr == NULL) {
         return;
     }
-    release_words(curPtr->next);
+    release_nodes(curPtr->next);
     free(curPtr);
     
 }	// To clear the linked list after usage
@@ -115,12 +115,45 @@ int duplicateCheck(char * c, int length) {
     }
 }	// Checking for duplicate characters in generated permutation, takes in a string and its length. Returns a 1 if a duplicate is detected.
 
-int main() {
+void passwordCracker(S_NODE * rootPtr) {
+	// Passwork cracking function, takes in a linked list with username and hash.
 	char * result;
-	int i, j; // Loop Integers
+	int n = 6; // Max length of generated permutation
+	int i, j;
 	int len; // Length of generated permutation
 	char *c = malloc((n+1)*sizeof(char)); // Generated permutation
 
+	for(i=1;i<=n;i++){
+    	for(j=0;j<i;j++) c[j]='0';
+    	c[i]=0;
+        
+        do {
+        	len = strlen(c);
+        	if(duplicateCheck(c, len) != 1) { // Checking for duplicate characters, if no duplicates detected, use crypt() function
+		   		result = crypt(c, rootPtr->hash);
+		   		
+				if(strcmp(result, rootPtr->hash) == 0) {	//if result == secret, strcmp returns 0
+					// Store results into the node
+					strcpy(rootPtr->recoveredPassword, c);
+					strcpy(rootPtr->timeData, getTime());
+					rootPtr = rootPtr->next;	// Move on to the next entry
+
+					// Reseting perumutation loops
+					i=1;
+					j=0;
+				}
+			}
+
+			if(rootPtr == NULL) {
+				// Exits the loop once no more entries remain
+				break;
+			}
+
+        } while(inc(c));
+    }
+}	// Passwork cracking function, takes in a linked list with username and hash.
+
+int main() {
 	printf("Program Started: %s \n", getTime());
 
 	// Opening the file
@@ -143,33 +176,7 @@ int main() {
 	
 
 	// Password cracking begins
-	for(i=1;i<=n;i++){
-    	for(j=0;j<i;j++) c[j]='0';
-    	c[i]=0;
-        
-        do {
-        	len = strlen(c);
-        	if(duplicateCheck(c, len) != 1) { // Checking for duplicate characters, if no duplicates detected, use crypt() function
-		   		result = crypt(c, rootPtr->hash);
-		   		
-				if(strcmp(result, rootPtr->hash) == 0) {	//if result == secret, strcmp returns 0
-					strcpy(rootPtr->recoveredPassword, c);
-					strcpy(rootPtr->timeData, getTime());
-					rootPtr = rootPtr->next;	// Move on to the next entry
-
-					// Reseting perumutation loops
-					i=1;
-					j=0;
-				}
-			}
-
-			if(rootPtr == NULL) {
-				// Exits the loop once no more entries remain
-				break;
-			}
-
-        } while(inc(c));
-    }
+    passwordCracker(rootPtr);
 
     printf("Program Ended: %s \n\n", getTime());
 
@@ -180,7 +187,7 @@ int main() {
     }
 
     // Freeing memory
-    release_words(headPtr);
-    release_words(rootPtr);
+    release_nodes(headPtr);
+    release_nodes(rootPtr);
 
 }	// Main
