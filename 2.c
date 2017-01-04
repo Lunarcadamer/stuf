@@ -1,3 +1,9 @@
+/*
+By Aloysius Chia (1547098)
+
+DISM/FT/2A/21
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,21 +13,22 @@ typedef struct paymentNode {
     char method[16];
     double amount;
     struct paymentNode * next;
-} P_NODE;
+} P_NODE; // Defining paymentNode structure
 
 typedef struct locationNode {
     char location[32];
     double amount;
     struct locationNode * next;
-} L_NODE;
+} L_NODE; // Defining locationNode structure
 
 typedef struct timeNode {
     char time[5];
     double amount;
     struct timeNode * next;
-} T_NODE;
+} T_NODE; // Defining timeNode structure
 
 P_NODE * insertPnode(P_NODE * headPtr, char * method, double amount) {
+    // Function to generate linked list for storing payment information. Takes a linked list, payment method and amount.
     P_NODE * prevPtr, * curPtr;
     P_NODE * newNode ;
     /*
@@ -62,9 +69,10 @@ P_NODE * insertPnode(P_NODE * headPtr, char * method, double amount) {
 
     /*                        */
     return headPtr;
-}
+} // Function to generate linked list for storing payment information. Takes a linked list, payment method and amount.
 
 L_NODE * insertLnode(L_NODE * headPtr, char * location, double amount) {
+    // Function to generate linked list for storing location information. Takes a linked list, location and revenue.
     L_NODE * prevPtr, * curPtr;
     L_NODE * newNode ;
     /*
@@ -105,9 +113,10 @@ L_NODE * insertLnode(L_NODE * headPtr, char * location, double amount) {
 
     /*                        */
     return headPtr;
-}
+} // Function to generate linked list for storing location information. Takes a linked list, location and revenue.
 
 T_NODE * insertTnode(T_NODE * headPtr, char * time, double amount) {
+    // Function to generate linked list for storing sales hours information. Takes a linked list, time and revenue.
     T_NODE * prevPtr, * curPtr;
     T_NODE * newNode ;
     /*
@@ -156,9 +165,10 @@ T_NODE * insertTnode(T_NODE * headPtr, char * time, double amount) {
 
     /*                        */
     return headPtr;
-}
+} // Function to generate linked list for storing sales hours information. Takes a linked list, time and revenue.
 
 P_NODE * orderPnode(P_NODE * headPtr, char * method, double amount) {
+    // Function to order payment method linked list in desecnding order
     P_NODE * prevPtr, * curPtr;
     P_NODE * newNode ;
     /*
@@ -201,9 +211,10 @@ P_NODE * orderPnode(P_NODE * headPtr, char * method, double amount) {
 
     /*                        */
     return headPtr;
-}
+}   // Function to order payment method linked list in desecnding order
 
 L_NODE * descendingLnode(L_NODE * headPtr, char * location, double amount) {
+    // Function to order location linked list in desecnding order
     L_NODE * prevPtr, * curPtr;
     L_NODE * newNode ;
     /*
@@ -246,9 +257,10 @@ L_NODE * descendingLnode(L_NODE * headPtr, char * location, double amount) {
 
     /*                        */
     return headPtr;
-}
+} // Function to order location linked list in desecnding order
 
 L_NODE * ascendingLnode(L_NODE * headPtr, char * location, double amount) {
+    // Function to order location linked list in asecnding order
     L_NODE * prevPtr, * curPtr;
     L_NODE * newNode ;
     /*
@@ -291,9 +303,10 @@ L_NODE * ascendingLnode(L_NODE * headPtr, char * location, double amount) {
 
     /*                        */
     return headPtr;
-}
+}   // Function to order location linked list in asecnding order
 
 T_NODE * descendingTnode(T_NODE * headPtr, char * time, double amount) {
+    // Function to order sales hours linked list in desecnding order
     T_NODE * prevPtr, * curPtr;
     T_NODE * newNode ;
     /*
@@ -336,9 +349,10 @@ T_NODE * descendingTnode(T_NODE * headPtr, char * time, double amount) {
 
     /*                        */
     return headPtr;
-}
+}   // Function to order sales hours linked list in desecnding order
 
 T_NODE * ascendingTnode(T_NODE * headPtr, char * time, double amount) {
+    // Function to order sales hours linked list in asecnding order
     T_NODE * prevPtr, * curPtr;
     T_NODE * newNode ;
     /*
@@ -381,36 +395,40 @@ T_NODE * ascendingTnode(T_NODE * headPtr, char * time, double amount) {
 
     /*                        */
     return headPtr;
-}
+}   // Function to order sales hours linked list in asecnding order
 
 void release_pNode(P_NODE * curPtr) {
+    // Function to free the payment linked list
     if (curPtr == NULL) {
         return;
     }
     release_pNode(curPtr->next);
     free(curPtr);
     
-}
+}   // Function to free the payment linked list
 
 void release_lNode(L_NODE * curPtr) {
+    // Function to free the location linked list
     if (curPtr == NULL) {
         return;
     }
     release_lNode(curPtr->next);
     free(curPtr);
     
-}
+}   // Function to free the location linked list
 
 void release_tNode(T_NODE * curPtr) {
+    // Function to free the sales hour linked list
     if (curPtr == NULL) {
         return;
     }
     release_tNode(curPtr->next);
     free(curPtr);
     
-}
+}   // Function to free the sales hour linked list
 
 void payment_summary(P_NODE * headPtr) {
+    // Function to print payment methods summary
     P_NODE * workPtr = headPtr;
     P_NODE * payment = NULL;
     setlocale(LC_NUMERIC, "");
@@ -433,9 +451,10 @@ void payment_summary(P_NODE * headPtr) {
 
     release_pNode(workPtr);
     release_pNode(payment);
-}
+}   // Function to print payment methods summary
 
 void location_summary(L_NODE * headPtr) {
+    // Function to print locations summary
     L_NODE * workPtr = headPtr;
     L_NODE * desclocation = NULL;
     L_NODE * asclocation = NULL;
@@ -471,9 +490,10 @@ void location_summary(L_NODE * headPtr) {
     release_lNode(workPtr);
     release_lNode(desclocation);
     release_lNode(asclocation);
-}
+} // Function to print locations summary
 
 void time_summary(T_NODE * headPtr) {
+    // Function to print sales hours summary
     T_NODE * workPtr = headPtr;
     T_NODE * desctimePtr = NULL;
     T_NODE * asctimePtr = NULL;
@@ -508,7 +528,7 @@ void time_summary(T_NODE * headPtr) {
     release_tNode(workPtr);
     release_tNode(desctimePtr);
     release_tNode(asctimePtr);
-}
+}   // Function to print sales hours summary
 
 void main() {
     char str[257], date[10], time[5], location[32], item[32], card[32];
@@ -519,11 +539,8 @@ void main() {
     L_NODE * locationPtr = NULL;
     T_NODE * timePtr = NULL;
 
-    if(fp == NULL) {
-        printf("Error opening file");
-    }
 
-
+    // Inserting File Data into linked lists
     while(fgets(str, 257, fp) != NULL) {
         sscanf(str, "%[^\t]\t%[^\t]\t%[^\t]\t%[^\t]\t%lf\t%s", date, time, location, item, &revenue, card);
 
@@ -534,11 +551,13 @@ void main() {
 
     fclose(fp);
 
+    // Printing Summaries
     payment_summary(paymentPtr);
     location_summary(locationPtr);
     time_summary(timePtr);
 
+    // Freeing the linked list after use
     release_pNode(paymentPtr);
     release_lNode(locationPtr);
     release_tNode(timePtr);
-}
+}   // Main
