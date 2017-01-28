@@ -5,7 +5,7 @@ import signal
 import time
 TIMEOUT = 20
 PENALTY = 20
-MAXROUND = 3
+MAXROUND = 15
 RESPONSE_LIMIT = 13
 FAST_LIMIT = 7
 FAST_BONUS = 10
@@ -127,14 +127,16 @@ def isValid(newword,oldword,fulldict,owndict):
     if len(newword) < 6:
         return False, "Invalid word. It is shorter than 6 letters"
     # Fill in your code here.
+    if(newword != newword.lower()):
+        return False, "Input was not in lowercase"
+    if (newword not in fulldict.keys()):
+        return False, "Input not found in dictionary"
+    if (newword in owndict.keys()):
+        return False, "Input has been used"
     if (newword[0] != oldword[-1:]):
         return False, "Input does not end with last character of previous word"
     if (newword[-3:] == "ing"):
         return False, "Input is ending with -ing-"
-    if (newword in owndict.keys()):
-        return False, "Input has been used"
-    if (newword not in fulldict.keys()):
-        return False, "Input not found in dictionary"
 
     return True, "The new word is accepted"
 def get_score_map():
