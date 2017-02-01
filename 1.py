@@ -116,7 +116,7 @@ def loadwords(wordlistfile):
     f=open(wordlistfile,"r")
     # load in all the words from the wordlistfile to the newdict.
     for line in f:
-        if (len(line) > 5):
+        if (len(line[:-1]) > 5):
             newdict[line[:-1]] = 1    
 
     f.close()
