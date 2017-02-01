@@ -102,13 +102,15 @@ def findword(oldword,fulldict,owndict):
     # In case the function cannot find a word to fulfill the above condition,
     # it will return a None.
     lastChar = oldword[-1:]
+    
+    sortedList = [word for word in fulldict if lastChar == word[0] and word not in owndict]
 
-    for words in fulldict:
-        newWord = random.choice(fulldict.keys())
-        if (lastChar == newWord[0] and newWord not in owndict):
+    for word in sortedList:
+        newWord = random.choice(sortedList)
+        if (newWord in fulldict):
             return newWord
 
-    # if sutiable  no word is found        
+    # if sutiable no word is found        
     return None
     
 def loadwords(wordlistfile):
@@ -116,8 +118,10 @@ def loadwords(wordlistfile):
     f=open(wordlistfile,"r")
     # load in all the words from the wordlistfile to the newdict.
     for line in f:
-        if (len(line[:-1]) > 5):
-            newdict[line[:-1]] = 1    
+        if (line[-1:] == "\n"):
+            line = line[:-1]
+        if (len(line) > 5 and line[-3:] != "ing" and "'" not in line):
+            newdict[line] = 1    
 
     f.close()
     
