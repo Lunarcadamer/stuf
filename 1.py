@@ -103,6 +103,7 @@ def findword(oldword,fulldict,owndict):
     # it will return a None.
     lastChar = oldword[-1:]
     
+    # Generate a list of words starting with the last character
     sortedList = [word for word in fulldict if lastChar == word[0] and word not in owndict]
 
     for word in sortedList:
