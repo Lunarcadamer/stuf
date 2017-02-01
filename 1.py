@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+
+#By Aloysius Chia (1547098)
+#DISM/FT/2A/21
+#PSE Assignment 2: Word Game Phase 1
+
 import random
 import re
 import signal
@@ -47,6 +52,7 @@ def my_raw_input(prompt,defval=None):
             return defval    
 
 def showmenu():
+    #prints the help menu
     print """
     This game begins with showing the player a randomly picked word
     The player and the computer will take turns to enter a new word to replace the
@@ -95,29 +101,28 @@ def findword(oldword,fulldict,owndict):
     # it is not found in the owndict
     # In case the function cannot find a word to fulfill the above condition,
     # it will return a None.
-    # Fill in your code please.
-    newChar = oldword[-1:]
+    lastChar = oldword[-1:]
 
     for words in fulldict:
         newWord = random.choice(fulldict.keys())
-        if (newChar == newWord[0] and newWord not in owndict):
-            break
+        if (lastChar == newWord[0] and newWord not in owndict):
+            return newWord
 
-    return newWord
-    # return None
+    # if sutiable  no word is found        
+    return None
     
 def loadwords(wordlistfile):
     newdict = {}
     f=open(wordlistfile,"r")
     # load in all the words from the wordlistfile to the newdict.
-    # fill in your code here
     for line in f:
-        if (len(line) > 5 and line[-3:] != "ing"):
+        if (len(line) > 5):
             newdict[line[:-1]] = 1    
 
     f.close()
     
     return newdict
+
 def isValid(newword,oldword,fulldict,owndict):
     #This function validates if the newword is fulfilling all the
     #rules.
@@ -126,7 +131,6 @@ def isValid(newword,oldword,fulldict,owndict):
     # for example, it may return (False, "Invalid word. It is shorter than 6 letters")
     if len(newword) < 6:
         return False, "Invalid word. It is shorter than 6 letters"
-    # Fill in your code here.
     if(newword != newword.lower()):
         return False, "Input was not in lowercase"
     if (newword not in fulldict.keys()):
@@ -165,27 +169,32 @@ def compute_score(thisword,scoremap):
     # Its return value is a tuple with the score and the discription
     # for exmaple : ( 11, "e(1)+ n(1)+ g(2)+ l(1)+ i(1)+ s(1)+ h(4) = 11")
 
-    total = 0  # set to 11 for demo purpose
+    total = 0
     score_str = ""
-    # fill in your code here
-
+    
+    # get the score map
     scoreMap = get_score_map()
     
+    # calculating score and generating score string
     for c in thisword:
         if (c != "\n"):
             total = total + scoreMap[c]
             score_str = score_str + c + "(" + str(scoreMap[c]) + ")+ "
 
+    # completing score string
     score_str = score_str[:-2] +  " = " + str(total)
 
     return total,score_str
+
 def finalScores(players):
-    # fill in the code to return the final score messages
+    # function to print final scores
     result = "\n\nThe final scores:\n"
+    # print final results
     result = result + players[0]["name"] + ": " +str(players[0]["score"]) + ".\n"
     result = result + players[1]["name"] + ": " + str(players[1]["score"]) + ".\n"
      
     return result
+
 def playgame(maindict):
     print """
     +-------------------------------+
