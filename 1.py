@@ -52,7 +52,7 @@ def my_raw_input(prompt,defval=None):
             return defval    
 
 def showmenu():
-    #prints the help menu
+    # prints the help menu
     print """
     This game begins with showing the player a randomly picked word
     The player and the computer will take turns to enter a new word to replace the
