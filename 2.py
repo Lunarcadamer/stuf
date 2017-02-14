@@ -134,7 +134,7 @@ def handler(con,q,maindict):
     		q.put("q")
     		break
 	con.close()
-	print "client connection is closed"
+	print "Client's game has ended, connection closed."
 	return
 
 maindict = wgengine.MainDict()
@@ -142,7 +142,8 @@ commonq = Queue.Queue(10)
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serversocket.bind(('localhost', 8888))
 serversocket.listen(5) # become a server socket, maximum 5 connections
-print "Server starts listening ..."
+print "Word game server running..."
+print "Listening on port 8888..."
 client=0
 stopFlag=False
 serversocket.settimeout(3.0) # setup a 3 seconds timeout to exit the blocking state
@@ -150,7 +151,7 @@ while True:
     if not stopFlag:
     	try:
             connection, address = serversocket.accept() 
-            print "start a new connection"
+            print "New connection with client established."
             client=client+1
             # setup and start a new thread to run an instance of handler() 
             t = threading.Thread(target=handler, args=(connection,commonq,maindict))
