@@ -8,7 +8,7 @@ import time
 
 TIMEOUT = 20
 PENALTY = 20
-MAXROUND = 15
+MAXROUND = 3
 RESPONSE_LIMIT=13
 FAST_LIMIT = 7
 FAST_BONUS = 10
@@ -23,20 +23,20 @@ class BColors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-def usersTurn(con,maindict,engine,buf):
+def usersTurn(con,maindict,engine):
     GRN=BColors.GRN
     RED=BColors.RED
     BLU=BColors.BLU
     ENDC=BColors.ENDC
     pnum=0
     startAt = time.time()
+    buf = "" 
     input = con.recv(255)
-    buf = ""
     if input == None:
         buf = "\n{0}Input time out.{1}".format(RED,ENDC)
         engine.players[pnum]["score"] = engine.players[pnum]["score"] - PENALTY
         #con.send(buf)
-        return False
+        return False, buf
     duration = time.time() - startAt
     buf = buf + "response time : {0:0.2f} s".format(duration)
     isok, mesg = engine.isValid(input,maindict)
@@ -44,7 +44,7 @@ def usersTurn(con,maindict,engine,buf):
         buf = "{0}{1}{2}".format(RED,mesg,ENDC)
         #con.send(buf)
         engine.players[pnum]["score"] = engine.players[pnum]["score"] - PENALTY
-        return False
+        return False, buf
     # The input is accepted.
     # need to compute the score
     c_score,score_str=engine.compute_score(input)
@@ -73,12 +73,15 @@ def usersTurn(con,maindict,engine,buf):
         # add the input into mydict
         engine.add_used_word(input)
         engine.curword = input
-        buf = buf + "\nAt Round    " + str(engine.round + 1) + "\n" + engine.players[0]['name'] + " scores:    " + str(engine.players[0]['score']) + "   " + engine.players[1]["name"] + " scores:    " + str(engine.players[1]["score"]) + "\n"
+        if engine.round < MAXROUND:
+            buf = buf + "\nAt Round    " + str(engine.round + 1) + "\n" + engine.players[0]['name'] + " scores:    " + str(engine.players[0]['score']) + "   " + engine.players[1]["name"] + " scores:    " + str(engine.players[1]["score"]) + "\n"
+        else:
+            return True, buf
         con.send(buf)
     else:
         # special case, the computer cannot find a suitable word.
-        return False
-    return True
+        return False, buf
+    return True, buf
 
 def handler(con,q,maindict):
     con.settimeout(20.0)
@@ -109,29 +112,28 @@ def handler(con,q,maindict):
                 if engine.round == 1:
                     buf = buf + "\nCurrent word: {0}{1}{2}\n".format(BLU,engine.curword,ENDC)
                     con.send(buf)
-                    buf = ""
-                if not usersTurn(con,maindict,engine,buf):
+                rtnValues = usersTurn(con,maindict,engine)
+                buf = "\n" + rtnValues[1]
+                if rtnValues[0] != True:
                     break
-                #if not computersTurn(con,maindict,engine,buf):
-                #    break
                 engine.round=engine.round+1
                 if engine.round>MAXROUND:
                     break                     # game ends at 30th round
             # end of while loop
             
-            print "{0}{1}{2}".format(BLU,engine.get_final_scores(),ENDC)
+            buf = buf + "{0}{1}{2}".format(BLU,engine.get_final_scores(),ENDC)
             if engine.isDrawn():
-                print "Wow, what a close fight, both of you are winners!"
+                buf = buf + "\nWow, what a close fight, both of you are winners!*"
             elif engine.isPlayerWon():
-                print "Congratulation to "+engine.players[0]["name"]+ " , you are the champion!"
+                buf = buf + "\nCongratulation to "+engine.players[0]["name"]+ " , you are the champion!*"
             else:
-                print engine.players[0]["name"]+ " , you have put up a good fight, try harder next time."
-    	    
+                buf = buf + "\n" + engine.players[0]["name"]+ " , you have put up a good fight, try harder next time.*"
+            con.send(buf)
     	except Exception as inst:
             if stopFlag or (str(inst) != "timed out"):
     		q.put("q")
     		break
-	#con.close()
+	con.close()
 	print "client connection is closed"
 	return
 
